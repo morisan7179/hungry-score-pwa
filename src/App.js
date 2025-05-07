@@ -1,10 +1,12 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+function App() {
+  return (
+    <div>
+      <h1>空腹スコア・アプリ</h1>
+      <p>ここにアプリの内容が入ります。</p>
+    </div>
+  );
+}
+
+export default App;
