@@ -8,7 +8,7 @@
     "react-router-dom": "^6.22.1",
     "recharts": "^2.8.0",
     "react-scripts": "5.0.1"
-    npm install react-scripts --save
+    
   },
   "scripts": {
     "start": "react-scripts start",
