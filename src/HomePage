@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 export default function HomePage() {
+  // ✅ 日付フォーマットを統一する関数
   const getTodayDate = () =>
     new Date().toLocaleDateString("ja-JP", {
       timeZone: "Asia/Tokyo",
@@ -8,6 +9,17 @@ export default function HomePage() {
       month: "2-digit",
       day: "2-digit",
     });
+
+  // テーマ切り替え用
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const isDark = theme === "dark";
 
   const [goal, setGoal] = useState(() => {
     const savedGoal = localStorage.getItem("goal");
@@ -24,25 +36,27 @@ export default function HomePage() {
     return saved ? Number(saved) : 0;
   });
 
-  const [todayScore, setTodayScore] = useState(() => {
-    const saved = localStorage.getItem("todayScore");
-    return saved ? Number(saved) : 0;
-  });
+  const [todayScore, setTodayScore] = useState(0); // 初期値は0
 
   useEffect(() => {
     const todayDate = getTodayDate();
     const savedDate = localStorage.getItem("lastRecordedDate");
 
     if (savedDate !== todayDate) {
-      setTodayScore(0);
       localStorage.setItem("lastRecordedDate", todayDate);
     }
+
+    const todayTotal = scores
+      .filter((entry) => entry.date === todayDate)
+      .reduce((sum, entry) => sum + entry.score, 0);
+
+    setTodayScore(todayTotal);
 
     localStorage.setItem("scores", JSON.stringify(scores));
     localStorage.setItem("goal", goal);
     localStorage.setItem("total", total);
-    localStorage.setItem("todayScore", todayScore);
-  }, [scores, goal, total, todayScore]);
+    localStorage.setItem("todayScore", todayTotal);
+  }, [scores, goal, total]);
 
   const addScore = (score) => {
     const now = new Date();
@@ -57,30 +71,78 @@ export default function HomePage() {
       score,
       date: dateStr,
     };
-    setScores([...scores, newEntry]);
+    const newScores = [...scores, newEntry];
+    setScores(newScores);
     setTotal(total + score);
-    setTodayScore(todayScore + score);
   };
 
   const deleteScore = (realIndex) => {
     const newScores = [...scores];
-    const removed = newScores.splice(realIndex, 1)[0];
+    newScores.splice(realIndex, 1);
     setScores(newScores);
-    setTotal((prev) => prev - removed.score);
+    setTotal(newScores.reduce((sum, entry) => sum + entry.score, 0));
+  };
 
-    const todayDate = getTodayDate();
-    if (removed.date === todayDate) {
-      setTodayScore((prev) => Math.max(0, prev - removed.score));
-    }
+  const appStyle = {
+    backgroundColor: isDark ? "#222" : "#fff",
+    color: isDark ? "#fff" : "#000",
+    minHeight: "100vh",
+    transition: "background-color 0.3s, color 0.3s",
+    padding: "5vw",
+    paddingBottom: "25vh",
+  };
+
+  const buttonStyle = {
+    fontSize: "6vw",
+    padding: "2vw 4vw",
+    backgroundColor: isDark ? "#444" : "#eee",
+    color: isDark ? "#fff" : "#000",
+    border: "1px solid #ccc",
   };
 
   return (
-    <div style={{ padding: "5vw", paddingBottom: "25vh" }}>
-      <h1 style={{ fontSize: "6vw", textAlign: "center" }}>空腹スコア・ダイエット</h1>
+    <div style={appStyle}>
+      {/* テーマ切り替えボタン */}
+      <div style={{ textAlign: "right", marginBottom: "2vw" }}>
+        <button
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          style={{
+            fontSize: "5vw",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          {isDark ? "🌞" : "🌙"}
+        </button>
+      </div>
+
+      <h1 style={{ fontSize: "6vw", textAlign: "center" }}>
+        空腹スコア・ダイエット
+      </h1>
       <p style={{ textAlign: "center", fontSize: "4vw" }}>
         今日のスコア: {todayScore} / <strong>{goal}</strong> 点目標
       </p>
 
+      {/* 月間目標変更欄 */}
+      <div style={{ textAlign: "center", marginTop: "4vw" }}>
+        <label style={{ fontSize: "3.5vw", marginRight: "2vw" }}>
+          月間目標を変更：
+        </label>
+        <input
+          type="number"
+          value={goal}
+          onChange={(e) => setGoal(Number(e.target.value))}
+          style={{
+            fontSize: "3.5vw",
+            width: "20vw",
+            padding: "0.5vw",
+            textAlign: "center",
+          }}
+        />
+      </div>
+
+      {/* ログ表示 */}
       <div style={{ fontSize: "3.5vw", marginTop: "5vw" }}>
         <h2>記録ログ</h2>
         {scores.length === 0 ? (
@@ -125,26 +187,27 @@ export default function HomePage() {
         )}
       </div>
 
+      {/* ★ ボタン（画面下部に固定） */}
       <div
         className="floating-buttons"
         style={{
           position: "fixed",
           bottom: 0,
           width: "100%",
-          backgroundColor: "#fff",
+          backgroundColor: isDark ? "#111" : "#fff",
           display: "flex",
           justifyContent: "space-around",
           padding: "3vw 0",
           boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
         }}
       >
-        <button onClick={() => addScore(1)} style={{ fontSize: "6vw", padding: "2vw 4vw" }}>
+        <button onClick={() => addScore(1)} style={buttonStyle}>
           ★☆☆
         </button>
-        <button onClick={() => addScore(2)} style={{ fontSize: "6vw", padding: "2vw 4vw" }}>
+        <button onClick={() => addScore(2)} style={buttonStyle}>
           ★★☆
         </button>
-        <button onClick={() => addScore(3)} style={{ fontSize: "6vw", padding: "2vw 4vw" }}>
+        <button onClick={() => addScore(3)} style={buttonStyle}>
           ★★★
         </button>
       </div>
