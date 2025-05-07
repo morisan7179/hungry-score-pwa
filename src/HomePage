@@ -1,0 +1,153 @@
+import React, { useState, useEffect } from "react";
+
+export default function HomePage() {
+  const getTodayDate = () =>
+    new Date().toLocaleDateString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+
+  const [goal, setGoal] = useState(() => {
+    const savedGoal = localStorage.getItem("goal");
+    return savedGoal ? Number(savedGoal) : 300;
+  });
+
+  const [scores, setScores] = useState(() => {
+    const saved = localStorage.getItem("scores");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [total, setTotal] = useState(() => {
+    const saved = localStorage.getItem("total");
+    return saved ? Number(saved) : 0;
+  });
+
+  const [todayScore, setTodayScore] = useState(() => {
+    const saved = localStorage.getItem("todayScore");
+    return saved ? Number(saved) : 0;
+  });
+
+  useEffect(() => {
+    const todayDate = getTodayDate();
+    const savedDate = localStorage.getItem("lastRecordedDate");
+
+    if (savedDate !== todayDate) {
+      setTodayScore(0);
+      localStorage.setItem("lastRecordedDate", todayDate);
+    }
+
+    localStorage.setItem("scores", JSON.stringify(scores));
+    localStorage.setItem("goal", goal);
+    localStorage.setItem("total", total);
+    localStorage.setItem("todayScore", todayScore);
+  }, [scores, goal, total, todayScore]);
+
+  const addScore = (score) => {
+    const now = new Date();
+    const dateStr = getTodayDate();
+    const timeStr = now.toLocaleTimeString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const newEntry = {
+      time: timeStr,
+      score,
+      date: dateStr,
+    };
+    setScores([...scores, newEntry]);
+    setTotal(total + score);
+    setTodayScore(todayScore + score);
+  };
+
+  const deleteScore = (realIndex) => {
+    const newScores = [...scores];
+    const removed = newScores.splice(realIndex, 1)[0];
+    setScores(newScores);
+    setTotal((prev) => prev - removed.score);
+
+    const todayDate = getTodayDate();
+    if (removed.date === todayDate) {
+      setTodayScore((prev) => Math.max(0, prev - removed.score));
+    }
+  };
+
+  return (
+    <div style={{ padding: "5vw", paddingBottom: "25vh" }}>
+      <h1 style={{ fontSize: "6vw", textAlign: "center" }}>空腹スコア・ダイエット</h1>
+      <p style={{ textAlign: "center", fontSize: "4vw" }}>
+        今日のスコア: {todayScore} / <strong>{goal}</strong> 点目標
+      </p>
+
+      <div style={{ fontSize: "3.5vw", marginTop: "5vw" }}>
+        <h2>記録ログ</h2>
+        {scores.length === 0 ? (
+          <p>まだ記録がありません。</p>
+        ) : (
+          <ul>
+            {scores
+              .slice()
+              .reverse()
+              .map((entry, index) => {
+                const realIndex = scores.length - 1 - index;
+                return (
+                  <li
+                    key={index}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "1vw",
+                    }}
+                  >
+                    <span>
+                      {entry.date} {entry.time}：{entry.score} 点
+                    </span>
+                    <button
+                      onClick={() => deleteScore(realIndex)}
+                      style={{
+                        marginLeft: "2vw",
+                        fontSize: "3.5vw",
+                        color: "red",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                );
+              })}
+          </ul>
+        )}
+      </div>
+
+      <div
+        className="floating-buttons"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          width: "100%",
+          backgroundColor: "#fff",
+          display: "flex",
+          justifyContent: "space-around",
+          padding: "3vw 0",
+          boxShadow: "0 -2px 5px rgba(0,0,0,0.1)",
+        }}
+      >
+        <button onClick={() => addScore(1)} style={{ fontSize: "6vw", padding: "2vw 4vw" }}>
+          ★☆☆
+        </button>
+        <button onClick={() => addScore(2)} style={{ fontSize: "6vw", padding: "2vw 4vw" }}>
+          ★★☆
+        </button>
+        <button onClick={() => addScore(3)} style={{ fontSize: "6vw", padding: "2vw 4vw" }}>
+          ★★★
+        </button>
+      </div>
+    </div>
+  );
+}
