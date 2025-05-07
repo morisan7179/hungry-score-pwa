@@ -1,1 +1,10 @@
-import React from 'react'; export default function App() { return <div>空腹スコア・アプリ</div>; }
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
