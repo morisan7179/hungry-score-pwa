@@ -1,0 +1,9 @@
+{
+  "short_name": "空腹スコア",
+  "name": "空腹スコア・ダイエット",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffa500",
+  "background_color": "#ffffff"
+}
