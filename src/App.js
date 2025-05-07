@@ -1,12 +1,22 @@
-import React from 'react';
+// App.js
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import HomePage from "./HomePage";
+import ProgressPage from "./ProgressPage";
 
-function App() {
+export default function App() {
   return (
-    <div>
-      <h1>空腹スコア・アプリ</h1>
-      <p>ここにアプリの内容が入ります。</p>
-    </div>
+    <Router>
+      <div style={{ padding: "10px" }}>
+        <nav style={{ display: "flex", gap: "20px", fontSize: "4vw" }}>
+          <Link to="/">🏠 記録ページ</Link>
+          <Link to="/progress">📊 進捗ページ</Link>
+        </nav>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/progress" element={<ProgressPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
-
-export default App;
